@@ -50,7 +50,9 @@ function createRepo(gitUrl, callback) {
   dirs[gitDir] = true;
   
   if (fs.existsSync(gitDir) && fs.existsSync(composeFlagPath(gitUrl, id))) {
-    return openRepo(gitUrl, id);
+    return new Promise(function(resolve,reject){
+      resolve({id: id, url: gitUrl, dir: gitDir});
+    });
   }
 
   if (fs.existsSync(gitDir)) {
@@ -62,18 +64,7 @@ function createRepo(gitUrl, callback) {
   return NodeGit.Clone.clone(gitUrl, gitDir, null)
     .then(function(repo){
       fs.writeFileSync(composeFlagPath(gitUrl, id));
-      return openRepo(gitUrl, id, callback);
-    });
-};
-
-function openRepo(gitUrl, id) {
-  var gitDir = composeGitDir(gitUrl, id);
-  console.log('GitPool: openRepo', gitDir);
-  return NodeGit.Repository.open(gitDir)
-    .then(function(repo){
-      console.log('GitPool: opened', gitDir);
-      repo.gitPool = {id: id, url: gitUrl, dir: gitDir};
-      return repo;
+      return {id: id, url: gitUrl, dir: gitDir}
     });
 };
 
@@ -90,12 +81,12 @@ function getPool(gitUrl) {
         });
       },
       destroy: function(client) {
-        delete dirs[client.gitPool.id];
+        delete dirs[client.id];
       },
       max: options.max || 3,
       min: options.min || 0,
       idleTimeoutMillis: options.idleTimeoutMillis || 90000,
-      log: true
+      log: options.log || false
     });
   }
   return pools[gitUrl];
@@ -132,7 +123,7 @@ api.acquire = function acquire(gitUrl) {
  * @return void
  */
 api.release = function release(repo) {
-  return getPool(repo.gitPool.url).release(repo);
+  return getPool(repo.url).release(repo);
 };
 
 /**
