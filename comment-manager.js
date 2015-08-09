@@ -25,7 +25,7 @@ module.exports = function CommentManager(github, username, repo_info) {
     }, msg);
     return func(args);
   }
-  
+
   /**
    * Compose a comment based on "parts" and put it on the
    * given pull-request. Existing comments may be updated
@@ -40,14 +40,14 @@ module.exports = function CommentManager(github, username, repo_info) {
       .then(function(comments){
         return Promise.all(_.map(parts, function(msgText, msgId){
           return updateSingle(prId, msgId, msgText, findBotComment(comments, msgId));
-        }))
+        }));
       })
       .then(function() {
         // For consumers, mask variations in returns.
         return null;
       }).done();
   }
-  
+
   function updateSingle(prId, msgId, newMsg, oldComment) {
     if (!_.isEmpty(newMsg)) newMsg = newMsg.trimRight() + footer(msgId);
     console.log('[CommentManager] New message:', msgId, newMsg);
@@ -81,7 +81,7 @@ module.exports = function CommentManager(github, username, repo_info) {
       return new Promise(function(r){r(null);});
     }
   }
-  
+
   function footer(msgId) {
     return '\n\n<span ' + msgId + '></span>';
   }

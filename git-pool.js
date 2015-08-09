@@ -27,18 +27,18 @@ var api = {};
 var options = {};
 
 function composeGitDir(gitUrl, id) {
-  return options.baseDir + '/' 
-    + gitUrl.replace(/[^a-zA-Z0-9\.]/g, '-')
-    + '---'
-    + id;
+  return options.baseDir + '/' +
+    gitUrl.replace(/[^a-zA-Z0-9\.]/g, '-') +
+    '---' +
+    id;
 }
 
 function composeFlagPath(gitUrl, id) {
-  return options.baseDir + '/.' 
-    + gitUrl.replace(/[^a-zA-Z0-9\.]/g, '-')
-    + '---'
-    + id
-    + '.loaded';
+  return options.baseDir + '/.' +
+    gitUrl.replace(/[^a-zA-Z0-9\.]/g, '-') +
+    '---' +
+    id +
+    '.loaded';
 }
 
 function createRepo(gitUrl, callback) {
@@ -48,7 +48,7 @@ function createRepo(gitUrl, callback) {
     gitDir = composeGitDir(gitUrl, id);
   }
   dirs[gitDir] = true;
-  
+
   if (fs.existsSync(gitDir) && fs.existsSync(composeFlagPath(gitUrl, id))) {
     return new Promise(function(resolve,reject){
       resolve({id: id, url: gitUrl, dir: gitDir});
@@ -64,9 +64,9 @@ function createRepo(gitUrl, callback) {
   return NodeGit.Clone.clone(gitUrl, gitDir, null)
     .then(function(repo){
       fs.writeFileSync(composeFlagPath(gitUrl, id));
-      return {id: id, url: gitUrl, dir: gitDir}
+      return {id: id, url: gitUrl, dir: gitDir};
     });
-};
+}
 
 function getPool(gitUrl) {
   if (!pools[gitUrl]) {
@@ -141,7 +141,7 @@ api.drainAll = function drainAll() {
  * @return void
  */
 api.destroyAllNow = function destroyAllNow() {
-  for (gitUrl in pools) {
+  for (var gitUrl in pools) {
     if (pools[gitUrl].destroyAllNow) {
       pools[gitUrl].destroyAllNow();
     }

@@ -48,7 +48,7 @@ module.exports = function advice(bot, repo_info, payload) {
       });
     })
     .then(function(){
-      console.log('[Advice] Update comments');
+      console.log('[Advice] Update comments', messages);
       return commentManager.update(parseInt(payload.number), messages);
     })
     .finally(function(){
