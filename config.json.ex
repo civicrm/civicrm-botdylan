@@ -12,7 +12,9 @@
     }
   },
   "jira": {
-    "url": "https://user:pass@issues.civicrm.org:443/jira",
+    "url": "https://user:pass@issues.civicrm.org/jira",
+    "username": "fixme",
+    "password": "fixme",
     "projects": ["CRM", "HR", "INFRA", "VOL"]
   },
   "git-pool": "/var/cache/git-pool"

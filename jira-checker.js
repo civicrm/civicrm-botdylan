@@ -19,8 +19,10 @@ module.exports = function JiraChecker(jiraConfig, pull_request) {
 
   function createJira() {
     var parts = url.parse(jiraConfig.url);
-    var authParts = parts.auth ? parts.auth.split(':') : [null,null];
-    var jira = new JiraApi(parts.protocol, parts.hostname, parts.port, authParts[0], authParts[1], jiraConfig.version ? jiraConfig.version : '2');
+    if (!parts.port) {
+      parts.port = (parts.protocol === 'https:' ? 443: 80);
+    }
+    var jira = new JiraApi(parts.protocol, parts.hostname, parts.port, jiraConfig.username, jiraConfig.password, jiraConfig.version ? jiraConfig.version : '2');
     var origMakeUri = jira.makeUri;
     jira.makeUri = function(pathname, altBase, altApiVersion) {
       var newBase = parts.path.trimLeft('/') + '/' + (altBase ? altBase : 'rest/api/');
