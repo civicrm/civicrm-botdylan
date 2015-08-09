@@ -12,3 +12,7 @@ module.exports = function(dir, cmd) {
       return r;
     });
 };
+
+module.exports.escape = function(value) {
+  return '"'+value.replace(/(["\s'$`\\])/g,'\\$1')+'"';
+};

@@ -1,3 +1,8 @@
+var GitHelper = require('../../git-helper.js');
+var ToxicChecker = require('../../toxic-checker.js');
+var CommentManager = require('../../comment-manager.js');
+var _ = require('lodash');
+
 module.exports = function advice(bot, repo_info, payload) {
   bot.trace('* [Advice] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
   console.log(repo_info);
@@ -6,9 +11,7 @@ module.exports = function advice(bot, repo_info, payload) {
   var GitPool = require('../../git-pool.js').init({
     baseDir: bot.options['git-pool']
   });
-  var GitHelper = require('../../git-helper.js');
   var gitUrl = 'git://github.com/' + repo_info.owner + '/' + repo_info.name + '.git'
-  var ToxicChecker = require('../../toxic-checker.js');
 
   if (payload.action !== 'opened' && payload.action !== 'reopened' &&  payload.action !== 'synchronize') {
     return;
@@ -16,10 +19,12 @@ module.exports = function advice(bot, repo_info, payload) {
 
   var repo = null; // ex: {url: ..., dir: ...., id: ...}
   var toxicChecker = null;
+  var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
+
   var p = GitPool.acquire(gitUrl)
     .then(function(theRepo){
       repo = theRepo;
-      console.log('[Advice] Cleanup git repo', repo);
+      console.log('[Advice] Cleanup repo:', repo);
       return GitHelper.cleanup(repo.dir);
     })
     .then(function(){
@@ -28,11 +33,14 @@ module.exports = function advice(bot, repo_info, payload) {
     })
     .then(function(prBranchName){
       console.log('[Advice] Check for toxic function changes');
-      toxicChecker = new ToxicChecker(repo.dir, payload.pull_request.head.sha, payload.pull_request.base.sha);
+      toxicChecker = new ToxicChecker(repo.dir, payload.pull_request.base.sha, payload.pull_request.head.sha);
       return toxicChecker.check();
     })
-    .then(function(){
-      console.log('[Advice] Release');
+    .then(function(messages){
+      return commentManager.update(parseInt(payload.number), []);//messages);
+    })
+    .finally(function(){
+      console.log('[Advice] Release repo:', repo);
       GitPool.release(repo);
     })
     .catch(function(err){
