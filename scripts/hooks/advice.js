@@ -1,7 +1,7 @@
-var GitHelper = require('../../git-helper.js');
-var ToxicChecker = require('../../toxic-checker.js');
-var JiraChecker = require('../../jira-checker.js');
-var CommentManager = require('../../comment-manager.js');
+var GitHelper = require('../../lib/git-helper.js');
+var ToxicChecker = require('../../lib/toxic-checker.js');
+var JiraChecker = require('../../lib/jira-checker.js');
+var CommentManager = require('../../lib/comment-manager.js');
 var _ = require('lodash');
 
 module.exports = function advice(bot, repo_info, payload) {
@@ -9,7 +9,7 @@ module.exports = function advice(bot, repo_info, payload) {
   console.log(repo_info);
   console.log(payload);
 
-  var GitPool = require('../../git-pool.js').init({
+  var GitPool = require('../../lib/git-pool.js').init({
     baseDir: bot.options['git-pool']
   });
   var gitUrl = 'git://github.com/' + repo_info.owner + '/' + repo_info.name + '.git'
