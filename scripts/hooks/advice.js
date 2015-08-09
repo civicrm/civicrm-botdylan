@@ -22,7 +22,7 @@ module.exports = function advice(bot, repo_info, payload) {
   var toxicChecker = null;
   var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
-  var messages = [];
+  var messages = {};
 
   var p = GitPool.acquire(gitUrl)
     .then(function(theRepo){
@@ -37,17 +37,18 @@ module.exports = function advice(bot, repo_info, payload) {
     .then(function(prBranchName){
       console.log('[Advice] Check for toxic function changes');
       toxicChecker = new ToxicChecker(repo.dir, payload.pull_request.base.sha, payload.pull_request.head.sha);
-      return toxicChecker.check().then(function(msgs){
-        messages = _.union(messages, msgs);
+      return toxicChecker.check().then(function(msgs) {
+        _.extend(messages, msgs);
       });
     })
     .then(function(){
       console.log('[Advice] Check for JIRA references');
-      return jiraChecker.check().then(function(msgs){
-        messages = _.union(msgs, messages);
+      return jiraChecker.check().then(function(msgs) {
+        messages['civi-botdylan-jira'] = msgs;
       });
     })
     .then(function(){
+      console.log('[Advice] Update comments');
       return commentManager.update(parseInt(payload.number), messages);
     })
     .finally(function(){

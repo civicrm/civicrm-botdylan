@@ -34,14 +34,15 @@ module.exports = function ToxicChecker(repoDir, fromRef, toRef) {
           }
         });
 
-        var messages = [];
+        var messages = {};
         _.forEach(messageData, function(badSymbols, templateName) {
           var message = options.templates[templateName];
           var escapedSymbols = _.map(badSymbols, function(s) {
             return '`' + s + '`';
           });
           message = message.replace(/\{SYMBOLS\}/g, conjunction('and', escapedSymbols));
-          messages.push(message);
+          var messageName = 'civi-botdylan-toxic-' + templateName.replace(/[^a-zA-Z0-9]/g, '-');
+          messages[messageName] = message;
         });
         return messages;
       });

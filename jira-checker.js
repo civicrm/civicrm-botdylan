@@ -20,16 +20,13 @@ module.exports = function JiraChecker(jiraConfig, pull_request) {
     var links = _.union(getLinks(pull_request.body), getLinks(pull_request.title));
     console.log('[JiraChecker] Links: ', links);
 
-    var msgs = [];
-    if (!_.isEmpty(links)) { 
-      msgs.push(compose(links));
-    }
-    console.log('[JiraChecker] Messages: ', msgs);
-    return new Promise(function(r){r(msgs);});
+    var msg = _.isEmpty(links) ? NULL : compose(links);
+    console.log('[JiraChecker] Message: ', msg);
+    return new Promise(function(r){r(msg);});
   }
 
   function compose(links) {
-    var buf = "## Related Links:\n\n";
+    var buf = "These links appear to be related:\n\n";
     buf = buf + _.map(links, function(link){
       return ' * [' + link.label + '](' + link.url +')\n';
     }).join("");

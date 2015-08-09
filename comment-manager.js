@@ -8,8 +8,6 @@ var _ = require('lodash'),
  */
 module.exports = function CommentManager(github, username, repo_info) {
 
-  var flagAttr = 'civicrm-botdylan';
-
   /**
    * Wrapper for 'github' API. Automatically set owner+repo details,
    * and return call as a promise.
@@ -34,73 +32,65 @@ module.exports = function CommentManager(github, username, repo_info) {
    * or deleted (to match the desired "parts").
    *
    * @param int prId
-   * @param Array parts
+   * @param Object parts
    * @return Promise<void>
    */
   function update(prId, parts) {
-    var newMsg = _.isEmpty(parts) ? null : compose(parts);
-    console.log('[CommentManager] New message:', newMsg);
-    
-    var removedMsg = header('*(Automated message removed.)*');
-    
-    return findBotComment(prId)
-      .then(function(comment){
-        console.log('[CommentManager] Found:', comment.id);
-        if (comment && newMsg && comment.body !== newMsg) {
-          console.log('[CommentManager] Update');
-          return invokeApi(github.issues.editComment, {
-            id: comment.id,
-            body: newMsg
-          });
-        }
-        else if (comment && !newMsg && comment.body !== removedMsg) {
-          console.log('[CommentManager] Remove');
-          return invokeApi(github.issues.editComment, {
-            id: comment.id,
-            body: removedMsg
-          });
-        }
-        else if (!comment && newMsg) {
-          console.log('[CommentManager] Create');
-          return invokeApi(github.issues.createComment, {
-            number: prId,
-            body: newMsg
-          });
-        }
-        else {
-          console.log('[CommentManager] No message changes.');
-        }
+    return invokeApi(github.issues.getComments, {number: prId})
+      .then(function(comments){
+        return Promise.all(_.map(parts, function(msgText, msgId){
+          return updateSingle(prId, msgId, msgText, findBotComment(comments, msgId));
+        }))
       })
       .then(function() {
         // For consumers, mask variations in returns.
         return null;
-      });
+      }).done();
   }
   
-  function header(msg) {
-    return '<span ' + flagAttr + '>'+msg+'</span>';
+  function updateSingle(prId, msgId, newMsg, oldComment) {
+    if (!_.isEmpty(newMsg)) newMsg = newMsg.trimRight() + footer(msgId);
+    console.log('[CommentManager] New message:', msgId, newMsg);
+
+    var removedMsg = '*(Automated message removed.)*' + footer(msgId);
+
+    console.log('[CommentManager] Found:', msgId, oldComment ? oldComment.id : null);
+    if (oldComment && newMsg && oldComment.body !== newMsg) {
+      console.log('[CommentManager] Update');
+      return invokeApi(github.issues.editComment, {
+        id: oldComment.id,
+        body: newMsg
+      });
+    }
+    else if (oldComment && !newMsg && oldComment.body !== removedMsg) {
+      console.log('[CommentManager] Remove:', msgId);
+      return invokeApi(github.issues.editComment, {
+        id: oldComment.id,
+        body: removedMsg
+      });
+    }
+    else if (!oldComment && newMsg) {
+      console.log('[CommentManager] Create:', msgId);
+      return invokeApi(github.issues.createComment, {
+        number: prId,
+        body: newMsg
+      });
+    }
+    else {
+      console.log('[CommentManager] No changes:', msgId);
+      return new Promise(function(r){r(null);});
+    }
+  }
+  
+  function footer(msgId) {
+    return '\n\n<span ' + msgId + '></span>';
   }
 
-  /**
-   * @param Array parts
-   * @return string, the full message
-   */
-  function compose(parts) {
-    var m = header('*(Automated notice)*');
-    _.forEach(parts, function(part) {
-      m = m + "\n\n----\n\n" + part;
+  function findBotComment(comments, msgId) {
+    return _.find(comments, function(comment){
+      return (comment.body.indexOf('<span ' + msgId) >= 0) &&
+        comment.user.login === username;
     });
-    return m;
-  }
-  
-  function findBotComment(prId) {
-    return invokeApi(github.issues.getComments, {number: prId})
-      .then(function(comments){
-        return _.find(comments, function(comment){
-          return (comment.body.indexOf('<span ' + flagAttr) >= 0) &&
-            comment.user.login === username;
-        });
-      });
   }
 
   return {
