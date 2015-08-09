@@ -1,5 +1,6 @@
 var GitHelper = require('../../git-helper.js');
 var ToxicChecker = require('../../toxic-checker.js');
+var JiraChecker = require('../../jira-checker.js');
 var CommentManager = require('../../comment-manager.js');
 var _ = require('lodash');
 
@@ -19,7 +20,9 @@ module.exports = function advice(bot, repo_info, payload) {
 
   var repo = null; // ex: {url: ..., dir: ...., id: ...}
   var toxicChecker = null;
+  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
+  var messages = [];
 
   var p = GitPool.acquire(gitUrl)
     .then(function(theRepo){
@@ -34,10 +37,18 @@ module.exports = function advice(bot, repo_info, payload) {
     .then(function(prBranchName){
       console.log('[Advice] Check for toxic function changes');
       toxicChecker = new ToxicChecker(repo.dir, payload.pull_request.base.sha, payload.pull_request.head.sha);
-      return toxicChecker.check();
+      return toxicChecker.check().then(function(msgs){
+        messages = _.union(messages, msgs);
+      });
     })
-    .then(function(messages){
-      return commentManager.update(parseInt(payload.number), []);//messages);
+    .then(function(){
+      console.log('[Advice] Check for JIRA references');
+      return jiraChecker.check().then(function(msgs){
+        messages = _.union(msgs, messages);
+      });
+    })
+    .then(function(){
+      return commentManager.update(parseInt(payload.number), messages);
     })
     .finally(function(){
       console.log('[Advice] Release repo:', repo);
