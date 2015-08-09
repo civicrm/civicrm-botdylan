@@ -12,12 +12,8 @@
     }
   },
   "jira": {
-    "projects": {
-      "CRM": "https://issues.civicrm.org/jira",
-      "HR": "https://issues.civicrm.org/jira",
-      "INFRA": "https://issues.civicrm.org/jira",
-      "VOL": "https://issues.civicrm.org/jira"
-    }
+    "url": "https://user:pass@issues.civicrm.org:443/jira",
+    "projects": ["CRM", "HR", "INFRA", "VOL"]
   },
   "git-pool": "/var/cache/git-pool"
 }

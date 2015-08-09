@@ -4,6 +4,8 @@
  */
 
 var Promise = require('promise'),
+    JiraApi = require('jira').JiraApi,
+    url = require('url'),
     _ = require('lodash');
 
 /**
@@ -11,26 +13,62 @@ var Promise = require('promise'),
  */
 module.exports = function JiraChecker(jiraConfig, pull_request) {
 
-  var projectRegex = new RegExp('^(' + _.keys(jiraConfig.projects).join('|') + ')-([0-9]+)$');
+  var projectRegex = new RegExp('^(' + jiraConfig.projects.join('|') + ')-([0-9]+)$');
+  var jira = createJira();
+  var findIssue = Promise.denodeify(jira.findIssue);
+
+  function createJira() {
+    var parts = url.parse(jiraConfig.url);
+    var authParts = parts.auth ? parts.auth.split(':') : [null,null];
+    var jira = new JiraApi(parts.protocol, parts.hostname, parts.port, authParts[0], authParts[1], jiraConfig.version ? jiraConfig.version : '2');
+    var origMakeUri = jira.makeUri;
+    jira.makeUri = function(pathname, altBase, altApiVersion) {
+      var newBase = parts.path.trimLeft('/') + '/' + (altBase ? altBase : 'rest/api/');
+      return origMakeUri.call(this, pathname, newBase, altApiVersion);
+    };
+    return jira;
+  }
 
   /**
-   * @return Promise<Array> messages
+   * @return Promise<string|null> message
    */
   function check() {
     var links = _.union(getLinks(pull_request.body), getLinks(pull_request.title));
-    console.log('[JiraChecker] Links: ', links);
 
-    var msg = _.isEmpty(links) ? NULL : compose(links);
-    console.log('[JiraChecker] Message: ', msg);
-    return new Promise(function(r){r(msg);});
+    // For each link, look up the corresponding issue and plug in the title
+    return new Promise(function(r){
+      if (_.isEmpty(links)) {
+        r(null);
+        return;
+      }
+      r(Promise
+        .all(_.map(links, function(link){
+          return new Promise(function(resolve, reject){
+            jira.findIssue(link.issue, function(err, issue){
+              if (issue && issue.fields && issue.fields.summary) {
+                link.label = link.issue + ': ' + issue.fields.summary;
+              }
+              resolve();
+            });
+          });
+        }))
+        .then(function(){
+          return compose(links);
+        })
+      );
+    });
   }
 
   function compose(links) {
     var buf = "These links appear to be related:\n\n";
     buf = buf + _.map(links, function(link){
-      return ' * [' + link.label + '](' + link.url +')\n';
+      return ' * [' + markdownEscape(link.label) + '](' + link.url +')\n';
     }).join("");
     return buf;
+  }
+
+  function markdownEscape(value) {
+    return value.replace(/([\*#\/\(\)\[\]\<\>])/g,'\\$1');
   }
 
   /**
@@ -43,8 +81,11 @@ module.exports = function JiraChecker(jiraConfig, pull_request) {
       var match = projectRegex.exec(word);
       if (match) {
         links.push({
+          issue: match[0],
+          project: match[1],
+          issueNum: match[2],
           label: match[0],
-          url: jiraConfig.projects[match[1]] + '/browse/' + match[0]
+          url: jiraConfig.url + '/browse/' + match[0]
         });
       }
     });
