@@ -3,6 +3,7 @@
   "password": "githubtoken",
   "url": "http://example.com:5000",
   "port": 5000,
+  "secret": "randomWebHookSecret",
   "repositories": {
     "repoowner/reponame": {
       "hooks": {
