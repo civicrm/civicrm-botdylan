@@ -1,0 +1,16 @@
+{
+  "apps" : [
+    {
+      "name"        : "civicrm-botdylan",
+      "exec_mode"   : "fork",
+      "script"      : "/home/botdylan/civicrm-botdylan/node_modules/botdylan/bin/botdylan.js",
+      "args"        : ["--dir=/home/botdylan/civicrm-botdylan"],
+      "watch"       : true,
+      "node_args"   : "",
+      "merge_logs"  : true,
+      "cwd"         : "/home/botdylan/civicrm-botdylan",
+      "instances"   : "1",
+      "env": {}
+    }
+  ]
+}

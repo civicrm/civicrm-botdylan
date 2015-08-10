@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "botdylan": "git://github.com/smoll/botdylan#69f600b813ec62d8edcf6fd982734efe4958cd83",
     "child-process-promise": "^1.1.0",
     "generic-pool": "^2.2.0",
     "jira": "git://github.com/steves/node-jira.git#efc81d4660dbd9710474aa48008629701d70ae9b",
