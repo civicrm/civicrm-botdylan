@@ -6,27 +6,37 @@ var _ = require('lodash'),
  * is available).
  */
 module.exports = function baseBranchLabelHook(bot, repo_info, payload) {
-  if (payload.action !== 'opened' && payload.action !== 'reopened' &&  payload.action !== 'synchronize') {
+  if (!payload.pull_request || !payload.pull_request.base) {
+    console.log('[BaseBranchLabelHook] Ignore:', payload);
     return;
   }
 
+  // Gaah. botdylan includes older version of GitHubApi. Load our own.
+  var GitHubApi = require("github");
+  var github = new GitHubApi({version: "3.0.0"});
+  github.authenticate({
+    type: 'oauth',
+    token: bot.options.password
+  });
+
   var appliedLabelNames = null, newLabels = null;
-  return invokeApi(bot.github.issues.getIssueLabels, {number: payload.pull_request.number})
+  return invokeApi(github.issues.getIssueLabels, {number: payload.pull_request.number})
     .then(function(appliedLabels){
       appliedLabelNames = _.pluck(appliedLabels, 'name');
       if (_.contains(appliedLabelNames, payload.pull_request.base.ref)) {
-        bot.trace('[BaseBranchLabelHook] Labels look good:', payload.pull_request.number, appliedLabelNames);
+        console.log('[BaseBranchLabelHook] Labels look good:', payload.pull_request.number, appliedLabelNames);
       } else {
         newLabels = _.union([payload.pull_request.base.ref], appliedLabelNames);
-        return invokeApi(bot.github.issues.edit, {
+        return invokeApi(github.issues.edit, {
            number: payload.pull_request.number,
            labels: newLabels
         })
         .then(function(){
-          bot.trace('[BaseBranchLabelHook] Updated labels:', payload.pull_request.number, newLabels);
+          console.log('[BaseBranchLabelHook] Updated labels:', payload.pull_request.number, newLabels);
         });
       }
-    });
+    })
+    .done();
 
   /**
    * Wrapper for 'github' API. Automatically set owner+repo details,
