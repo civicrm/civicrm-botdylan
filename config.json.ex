@@ -6,9 +6,9 @@
   "repositories": {
     "repoowner/reponame": {
       "hooks": {
-        "issues": ["log"],
-        "issue_comment": ["log"],
-        "pull_request": ["log", "jira", "toxic"]
+        "issues": ["log", "jira"],
+        "issue_comment": ["log", "jira"],
+        "pull_request": ["log", "base-branch-label", "jira", "toxic"]
       }
     }
   },

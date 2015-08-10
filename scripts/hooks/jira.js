@@ -2,6 +2,10 @@ var JiraChecker = require('../../lib/jira-checker.js');
 var CommentManager = require('../../lib/comment-manager.js');
 var _ = require('lodash');
 
+/**
+ * Check the PR title and body for referneces to JIRA issues.
+ * If found, bi-directional links (using Github comments and JIRA remote-links).
+ */
 module.exports = function githubJiraHook(bot, repo_info, payload) {
   bot.trace('* [GithubJiraHook] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
   console.log(repo_info);

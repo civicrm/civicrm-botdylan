@@ -3,6 +3,10 @@ var ToxicChecker = require('../../lib/toxic-checker.js');
 var CommentManager = require('../../lib/comment-manager.js');
 var _ = require('lodash');
 
+/**
+ * Check .toxic.json for a list of PHP functions considered toxic. If any are
+ * modified in the PR, then post a warning to the PR.
+ */
 module.exports = function toxicPhpHook(bot, repo_info, payload) {
   bot.trace('* [ToxicPhpHook] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
   console.log(repo_info);
