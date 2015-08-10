@@ -7,15 +7,12 @@ var _ = require('lodash');
  * If found, bi-directional links (using Github comments and JIRA remote-links).
  */
 module.exports = function githubJiraHook(bot, repo_info, payload) {
-  bot.trace('* [GithubJiraHook] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
-  console.log(repo_info);
-  console.log(payload);
-
-  if (payload.action !== 'opened' && payload.action !== 'reopened' &&  payload.action !== 'synchronize') {
+  if (!payload.pull_request && !payload.issue) {
     return;
   }
 
-  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request, repo_info);
+  var issueNumber = parseInt(payload.pull_request ? payload.pull_request.number : payload.issue.number);
+  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request || payload.issue, repo_info);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
 
   console.log('[GithubJiraHook] Check for JIRA references');
@@ -23,7 +20,7 @@ module.exports = function githubJiraHook(bot, repo_info, payload) {
     var messages = {};
     messages['civi-botdylan-jira'] = msgs;
     console.log('[GithubJiraHook] Update comments', messages);
-    return commentManager.update(parseInt(payload.number), messages);
+    return commentManager.update(issueNumber, messages);
   })
   .catch(function(err){
     bot.handleError(err);
