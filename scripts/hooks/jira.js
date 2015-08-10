@@ -11,9 +11,18 @@ module.exports = function githubJiraHook(bot, repo_info, payload) {
   if (!payload.pull_request && !payload.issue) {
     return;
   }
+  
+
+  // Gaah. botdylan includes older version of GitHubApi. Load our own.
+  var GitHubApi = require("github");
+  var github = new GitHubApi({version: "3.0.0"});
+  github.authenticate({
+    type: 'oauth',
+    token: bot.options.password
+  });
 
   var issueNumber = parseInt(payload.pull_request ? payload.pull_request.number : payload.issue.number);
-  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request || payload.issue, repo_info, bot.github);
+  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request || payload.issue, repo_info, github);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
 
   // We're a bit promiscuous about accepting hooks. This is good for frequent updates
