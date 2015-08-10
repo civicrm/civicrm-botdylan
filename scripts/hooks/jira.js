@@ -15,11 +15,11 @@ module.exports = function githubJiraHook(bot, repo_info, payload) {
   var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request || payload.issue, repo_info);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
 
-  console.log('[GithubJiraHook] Check for JIRA references');
+  bot.trace('[GithubJiraHook] Check for JIRA references');
   var p = jiraChecker.check().then(function(msgs) {
     var messages = {};
     messages['civi-botdylan-jira'] = msgs;
-    console.log('[GithubJiraHook] Update comments', messages);
+    bot.trace('[GithubJiraHook] Update comments', messages);
     return commentManager.update(issueNumber, messages);
   })
   .catch(function(err){

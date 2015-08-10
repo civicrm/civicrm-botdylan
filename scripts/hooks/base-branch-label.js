@@ -15,7 +15,7 @@ module.exports = function baseBranchLabelHook(bot, repo_info, payload) {
     .then(function(appliedLabels){
       appliedLabelNames = _.pluck(appliedLabels, 'name');
       if (_.contains(appliedLabelNames, payload.pull_request.base.ref)) {
-        console.log('[BaseBranchLabelHook] Labels look good:', payload.pull_request.number, appliedLabelNames);
+        bot.trace('[BaseBranchLabelHook] Labels look good:', payload.pull_request.number, appliedLabelNames);
       } else {
         newLabels = _.union([payload.pull_request.base.ref], appliedLabelNames);
         return invokeApi(bot.github.issues.edit, {
@@ -23,7 +23,7 @@ module.exports = function baseBranchLabelHook(bot, repo_info, payload) {
            labels: newLabels
         })
         .then(function(){
-          console.log('[BaseBranchLabelHook] Updated labels:', payload.pull_request.number, newLabels);
+          bot.trace('[BaseBranchLabelHook] Updated labels:', payload.pull_request.number, newLabels);
         });
       }
     });
