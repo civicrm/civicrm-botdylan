@@ -11,7 +11,7 @@ module.exports = function githubJiraHook(bot, repo_info, payload) {
     return;
   }
 
-  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request);
+  var jiraChecker = new JiraChecker(bot.options.jira, payload.pull_request, repo_info);
   var commentManager = CommentManager(bot.github, bot.options.username, repo_info);
 
   console.log('[GithubJiraHook] Check for JIRA references');

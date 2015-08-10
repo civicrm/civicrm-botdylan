@@ -11,7 +11,7 @@
   "dependencies": {
     "child-process-promise": "^1.1.0",
     "generic-pool": "^2.2.0",
-    "jira": "^0.9.2",
+    "jira": "git://github.com/steves/node-jira.git#efc81d4660dbd9710474aa48008629701d70ae9b",
     "lodash": "^3.10.1",
     "nodegit": "^0.4.1",
     "rimraf": "^2.4.2"
