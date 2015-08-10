@@ -8,7 +8,7 @@ var _ = require('lodash');
  * modified in the PR, then post a warning to the PR.
  */
 module.exports = function toxicPhpHook(bot, repo_info, payload) {
-  bot.trace('* [ToxicPhpHook] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
+  console.log('* [ToxicPhpHook] Logged hook at ' + repo_info.owner + '/' + repo_info.name);
 
   var GitPool = require('../../lib/git-pool.js').init({
     baseDir: bot.options['git-pool']
@@ -26,24 +26,24 @@ module.exports = function toxicPhpHook(bot, repo_info, payload) {
   var p = GitPool.acquire(gitUrl)
     .then(function(theRepo){
       repo = theRepo;
-      bot.trace('[ToxicPhpHook] Cleanup repo:', repo);
+      console.log('[ToxicPhpHook] Cleanup repo:', repo);
       return GitHelper.cleanup(repo.dir);
     })
     .then(function(){
-      bot.trace('[ToxicPhpHook] Checkout PR');
+      console.log('[ToxicPhpHook] Checkout PR');
       return GitHelper.checkoutPullRequest(repo.dir, parseInt(payload.number));
     })
     .then(function(prBranchName){
-      bot.trace('[ToxicPhpHook] Check for toxic function changes');
+      console.log('[ToxicPhpHook] Check for toxic function changes');
       toxicChecker = new ToxicChecker(repo.dir, payload.pull_request.base.sha, payload.pull_request.head.sha);
       return toxicChecker.check();
     })
     .then(function(messages){
-      bot.trace('[ToxicPhpHook] Update comments', messages);
+      console.log('[ToxicPhpHook] Update comments', messages);
       return commentManager.update(parseInt(payload.number), messages);
     })
     .finally(function(){
-      bot.trace('[ToxicPhpHook] Release repo:', repo);
+      console.log('[ToxicPhpHook] Release repo:', repo);
       GitPool.release(repo);
     })
     .catch(function(err){
