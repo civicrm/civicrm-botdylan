@@ -7,19 +7,24 @@ writing we use [smoll's PR for hook security](https://github.com/botdylan/botdyl
 ## Download
 git clone https://github.com/civicrm/civicrm-botdylan
 cd civicrm-botdylan
-npm install
 
 ## Configure
 cp config.json.ex config.json
 vi config.json
 
 ## Launch (direct)
+npm install
 node ./node_modules/botdylan/bin/botdylan.js --dir=$PWD
 
 ## Launch (process manager)
+npm install
 sudo npm install pm2 -g
 cp civicrm-botdylan.pm2.json.ex civicrm-botdylan.pm2.json
 vi civicrm-botdylan.pm2.json.ex
 pm2 start civicrm-botdylan.pm2.json
 # note: only run one instance at a time. git-pool is not currently cluster aware.
+
+## Launch (docker) -- POORLY TESTED
+docker build -t local/botdylan .
+bash docker-run.sh
 ```

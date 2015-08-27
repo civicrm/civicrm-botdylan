@@ -3,12 +3,12 @@
     {
       "name"        : "civicrm-botdylan",
       "exec_mode"   : "fork",
-      "script"      : "/home/botdylan/civicrm-botdylan/node_modules/botdylan/bin/botdylan.js",
-      "args"        : ["--dir=/home/botdylan/civicrm-botdylan"],
+      "script"      : "/srv/bot/node_modules/botdylan/bin/botdylan.js",
+      "args"        : ["--dir=/srv/bot"],
       "watch"       : true,
       "node_args"   : "",
       "merge_logs"  : true,
-      "cwd"         : "/home/botdylan/civicrm-botdylan",
+      "cwd"         : "/srv/bot",
       "instances"   : "1",
       "env": {}
     }
