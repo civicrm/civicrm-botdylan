@@ -41,6 +41,9 @@ module.exports = function githubJiraHook(bot, repo_info, payload) {
     .then(function(){
       return jiraChecker.updateLinksFromJira(links);
     })
+    .then(function(){
+      return jiraChecker.updateJiraLabels(links, 'PatchSubmitted');
+    })
     .finally(function(err){
       locks.release(lockName);
     })
