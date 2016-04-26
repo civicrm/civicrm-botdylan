@@ -14,7 +14,7 @@
     "generic-pool": "^2.2.0",
     "jira": "git://github.com/steves/node-jira.git#efc81d4660dbd9710474aa48008629701d70ae9b",
     "lodash": "^3.10.1",
-    "nodegit": "^0.4.1",
+    "nodegit": "^0.12.2",
     "rimraf": "^2.4.2",
     "promise": "~7.0.4",
     "github": "~0.2.4"
