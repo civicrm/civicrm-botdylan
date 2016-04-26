@@ -4,10 +4,13 @@ if [ -n "$1" ]; then
   CMD="$@"
 else
   ## Use pm2 so that botdylan will relaunch automatically
-  CMD="sudo -u www-data -H pm2 start --no-daemon /srv/bot/civicrm-botdylan.pm2-docker.json"
+  CMD="bash /srv/bot/.docker-run.sh"
 fi
 
+## FIXME: Gaa! Need --privileged so that we can set `sysctl -w fs.inotify.max_user_watches=524288`
+
 docker run \
+  --privileged \
   -v $PWD:/srv/bot \
   -v $PWD/cache/npm:/root/.npm \
   -p 5000:5000 \
